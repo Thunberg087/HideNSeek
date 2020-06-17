@@ -1,5 +1,6 @@
 <template>
   <div>
+    <button @click="leaveLobby">Leave lobby</button>
     <div :key="player.playerName" v-for="player in players">
       {{player.playerName}}
     </div>
@@ -28,7 +29,7 @@ export default {
       });
     },
     leaveLobby() {
-      
+      this.$store.dispatch('leaveLobby', { lobbyId: this.$route.params.id, playerName: this.$store.state.gamePlayerName, vm: this })
     }
   }
 }

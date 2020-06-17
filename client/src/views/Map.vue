@@ -31,7 +31,7 @@ export default {
   },
   data() {
     return {
-      accessToken: require('../../../tokens').mapbokToken, 
+      accessToken: require('../../../tokens').mapboxToken, 
       mapStyle: "mapbox://styles/mapbox/streets-v11",
       currentPosition: null,
     };

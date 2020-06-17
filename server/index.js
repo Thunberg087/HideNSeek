@@ -30,80 +30,18 @@ server.listen(port, () => {
 const io = require('socket.io').listen(server);
 
 
-function makeid(length) {
-  var result           = '';
-  var characters       = '0123456789';
-  var charactersLength = characters.length;
-  for ( var i = 0; i < length; i++ ) {
-     result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
 
+
+let rooms = []
 
 io.on('connection', function (socket) {
 
   console.log("Client connected: (" + socket.id + ")");
+  require('./socket_routes/lobby')(io, socket, rooms)
 
 
-  
-  
-  socket.on('createLobby', (data, callback) => {
-    console.log("Creating lobby");
-    
-    socket.playerName = data.playerName
-
-    let lobbyId = makeid(2)
-
-    socket.join(lobbyId, () => {
- 
-      // var numClients = (typeof clientIds !== 'undefined') ? Object.keys(clientIds).length : 0;
-     
-      io.in(lobbyId).clients((err , clients) => {
-        let newClients = clients.map(el => {
-          return { socketId: el, playerName: io.sockets.connected[el].playerName }
-        })
-
-        callback(lobbyId)
-      });
-
-    });
-  });
-
-  
-  socket.on('joinLobby', (data, callback) => {
-
-    socket.playerName = data.playerName
-
-    socket.join(data.lobbyId, () => {
-      io.in(data.lobbyId).clients((err , clients) => {
-        let newClients = clients.map(el => {
-          return { socketId: el, playerName: io.sockets.connected[el].playerName }
-        })
-        socket.to(data.lobbyId).emit('updatePlayers', newClients);
-
-        callback(newClients)
-      });
-    });
-  });
-
-
-
-  socket.on('getLobbyPlayers', (data, callback) => {
-      io.in(data.lobbyId).clients((err , clients) => {
-        let newClients = clients.map(el => {
-          return { socketId: el, playerName: io.sockets.connected[el].playerName }
-        })
-        callback(newClients)
-      });
-  });
-
-  
 
   socket.on('disconnect', function () {
     console.log("Client disconnected: (" + socket.id + ")");
-    console.log(socket.rooms);
-    
   });
 });
-
