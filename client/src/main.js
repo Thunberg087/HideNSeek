@@ -5,8 +5,10 @@ import router from './router'
 import VueSocketIO from 'vue-socket.io'
 import io from 'socket.io-client'
  
-export const socket = io("http://localhost:3000")
-
+export const socket = io("http://localhost:3000", {
+  'reconnection':true,
+  'reconnection delay': 2500,
+})
 
 Vue.use(VueSocketIO, socket)
 

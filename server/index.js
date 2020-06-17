@@ -90,6 +90,8 @@ io.on('connection', function (socket) {
     });
   });
 
+
+
   socket.on('getLobbyPlayers', (data, callback) => {
       io.in(data.lobbyId).clients((err , clients) => {
         let newClients = clients.map(el => {

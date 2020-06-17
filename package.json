@@ -4,7 +4,8 @@
   "description": "",
   "main": "tokens.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "concurrently \"cd client/ && npm run serve\" \"cd server/ && nodemon\""
   },
   "repository": {
     "type": "git",
@@ -16,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/Thunberg087/HideNSeek/issues"
   },
-  "homepage": "https://github.com/Thunberg087/HideNSeek#readme"
+  "homepage": "https://github.com/Thunberg087/HideNSeek#readme",
+  "dependencies": {
+    "concurrently": "^5.2.0"
+  }
 }
