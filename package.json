@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/Thunberg087/HideNSeek#readme",
   "dependencies": {
-    "concurrently": "^5.2.0"
+    "concurrently": "^5.2.0",
+    "vuex-persistedstate": "^3.0.1"
   }
 }

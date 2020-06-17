@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <!-- {{this.$store.state}} -->
     <router-view/>
   </div>
 </template>
@@ -12,6 +13,20 @@ export default {
   components: {
     Navbar
   },
+  created() {
+    if (this.$store.state.inGame) {
+      console.log("Ingame");
+      this.$socket.emit('joinLobby', { lobbyId: this.$store.state.gameLobbyID, playerName: this.$store.state.gamePlayerName }, (data) => {
+        console.log(data);
+        if (this.$route.name != 'Lobby') {
+          this.$router.push({name: 'Lobby', params: { id: this.$store.state.gameLobbyID }})
+        }
+      });
+    } else {
+      this.$router.push({name: 'Home'}) 
+
+    }
+  }
 }
 </script>
 

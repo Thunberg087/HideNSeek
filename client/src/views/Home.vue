@@ -24,13 +24,17 @@ export default {
   methods: {
     createLobby() {
       this.$socket.emit('createLobby', { playerName: this.playerName },  (callbackData) => {
+        this.$store.commit('UPDATE_GAME_CONNECTION', { inGame: true, gameLobbyID: callbackData, gamePlayerName: this.playerName })
         console.log(`Created lobby`, callbackData);
         this.$router.push({name: 'Lobby', params: { id: callbackData }})
       });
     },
     joinLobby() {
       this.$socket.emit('joinLobby', { lobbyId: this.lobbyId, playerName: this.playerName }, (data) => {
+        this.$store.commit('UPDATE_GAME_CONNECTION', { inGame: true, gameLobbyID: this.lobbyId, gamePlayerName: this.playerName })
         console.log(data);
+        this.$router.push({name: 'Lobby', params: { id: this.lobbyId }})
+
       });
     }
   }

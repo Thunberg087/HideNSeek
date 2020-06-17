@@ -26,6 +26,9 @@ export default {
       this.$socket.emit('getLobbyPlayers', { lobbyId: this.$route.params.id }, (data) => {
         this.players = data
       });
+    },
+    leaveLobby() {
+      
     }
   }
 }
