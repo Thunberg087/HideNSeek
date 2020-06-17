@@ -1,13 +1,12 @@
 <template>
   <div class="stars" id="app">
     <!-- {{this.$store.state}} -->
-
     <div class="stars"></div>
     <div class="twinkling"></div>
     <div class="clouds"></div>
 
     <router-view class="mainPage" />
-    <Footer />
+    <!-- <Footer /> -->
   </div>
 </template>
 
@@ -22,24 +21,30 @@ export default {
     Logo,
     Footer
   },
+  sockets: {
+    updatePlayers(data) {
+      this.$store.commit('UPDATE_PLAYERS', data);
+    },
+  },
   created() {
- 
-
-    // if (this.$store.state.inGame) {
-    //   this.$store
-    //     .dispatch("joinLobby", {
-    //       lobbyId: this.$store.state.gameLobbyID,
-    //       playerName: this.$store.state.gamePlayerName,
-    //       vm: this
-    //     })
-    //     .catch(error => {
-    //       this.$store.dispatch("resetLobbyStatus");
-    //     });
-    // } else {
-    //   if (this.$route.name != "Home") {
-    //     this.$router.push({ name: "Home" });
-    //   }
-    // }
+    if (this.$store.state.ingame) {
+      if (this.$route.name != "Map") {
+        this.$router.push({ name: "Map" });
+      }
+    } else {
+      if (this.$store.state.playerId) {
+        if (this.$route.name != "Lobby") {
+          this.$router.push({
+            name: "Lobby",
+            params: { id: this.$store.state.roomId }
+          });
+        }
+      } else {
+        if (this.$route.name != "Home") {
+          this.$router.push({ name: "Home" });
+        }
+      }
+    }
   }
 };
 </script>

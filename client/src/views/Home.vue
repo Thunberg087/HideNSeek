@@ -4,9 +4,9 @@
     <div class="menu">
       <input type="text" placeholder="Your name" v-model="playerName" />
       <button @click="createLobby">Create game</button>
-      <input type="text" placeholder="Lobby ID" v-model="lobbyId" />
+      <input type="text" placeholder="Lobby ID" v-model="roomId" />
       <button @click="joinLobby">Join game</button>
-      <p v-if="errMsg">{{errMsg}}</p>
+      <p v-if="errorMessage">{{errorMessage}}</p>
     </div>
   </div>
 </template>
@@ -22,40 +22,37 @@ export default {
   data() {
     return {
       playerName: "awd",
-      lobbyId: "",
+      roomId: "",
       players: [],
-      errMsg: null
+      errorMessage: null
     };
   },
   methods: {
     createLobby() {
-      this.$socket.emit(
-        "createLobby",
-        { playerName: this.playerName },
-        callbackData => {
-          this.$store.commit("UPDATE_GAME_CONNECTION", {
-            inGame: true,
-            gameLobbyID: callbackData,
-            gamePlayerName: this.playerName
-          });
+      this.$socket.emit("createLobby", { playerName: this.playerName }, callbackData => {
+         console.log(callbackData);
+         
+         this.$store.dispatch('updatePlayerInfo', { playerId: callbackData.players[0].playerId, roomId: callbackData.roomId })
+
           console.log(`Created lobby`, callbackData);
           if (this.$route.name != 'Lobby') {
-            this.$router.push({ name: "Lobby", params: { id: callbackData } });
+            this.$router.push({ name: "Lobby", params: { id: callbackData.roomId } });
           }
-        }
-      );
+      });
     },
     joinLobby() {
-      this.$store
-        .dispatch("joinLobby", {
-          lobbyId: this.lobbyId,
-          playerName: this.playerName,
-          vm: this
-        })
-        .catch(error => {
-          this.errMsg = error.errMsg;
-          this.$store.dispatch("resetLobbyStatus");
-        });
+      this.$socket.emit("joinLobby", { playerName: this.playerName, roomId: this.roomId }, callbackData => {
+        if (!callbackData.errorMessage) {
+          this.$store.dispatch('updatePlayerInfo', { playerId: callbackData.playerId, roomId: this.roomId })
+          console.log(`Player joined room: `, this.roomId);
+          if (this.$route.name != 'Lobby') {
+            this.$router.push({ name: "Lobby", params: { id: this.roomId } });
+          }
+        } else {
+          this.errorMessage = callbackData.errorMessage
+        }
+      
+      });
     }
   }
 };

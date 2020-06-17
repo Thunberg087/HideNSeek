@@ -30,16 +30,14 @@ server.listen(port, () => {
 const io = require('socket.io').listen(server);
 
 
-
-
-let rooms = []
+let rooms = {}
 
 io.on('connection', function (socket) {
 
   console.log("Client connected: (" + socket.id + ")");
+
   require('./socket_routes/lobby')(io, socket, rooms)
-
-
+  require('./socket_routes/game')(io, socket, rooms)
 
   socket.on('disconnect', function () {
     console.log("Client disconnected: (" + socket.id + ")");

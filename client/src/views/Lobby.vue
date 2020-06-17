@@ -1,96 +1,150 @@
 <template>
   <div>
     <button @click="leaveLobby">Leave lobby</button>
-    <p>Current players</p>
+    <br />
+    <br />
+    <!-- <img
+      class="globeImg"
+      src="https://upload.wikimedia.org/wikipedia/commons/5/5e/%C3%86toms_-_Earth.svg"
+      width="100%"
+    />-->
+    <!-- <p>Current players</p> -->
     <div class="playerField">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/%C3%86toms_-_Earth.svg" width="100%">
+      <Player :player="player" :key="player.playerName" v-for="player in players" />
     </div>
-      <div class="player" :key="player.playerName" v-for="player in players">
-        <h5>{{player.playerName}}</h5>
-        <i :style="playerColor" class="fas fa-male"></i>
-      </div>
+    <h1>{{countDownTime}}</h1>
+    <button v-if="leader" :disabled="players.length < 1" @click="initGame">Start game</button>
   </div>
 </template>
 
 <script>
+import Player from "./../components/lobby/Player";
+
 export default {
   data() {
     return {
-      players: []
-    }
+      countDownTime: null
+    };
+  },
+  components: {
+    Player
   },
   sockets: {
-    updatePlayers(data) {
-      this.players = data
+    countDown(data) {
+      if (data === 0) {
+        this.startGame();
+      }
+      this.countDownTime = data;
     }
   },
   created() {
-    this.getPlayers()
+    this.connectToSocketRoom();
+    this.checkIfLobbyExists();
   },
   computed: {
-    playerColor() {
-      let r = Math.floor(Math.random() * 255);
-      let g = Math.floor(Math.random() * 255);
-      let b = Math.floor(Math.random() * 255);
-      return {"color": "rgb("+ r +","+ g +","+ b +")"}
+    players() {
+      return this.$store.state.players
+    },
+    leader() {
+      let player = this.$store.state.players.find(
+        player => player.playerId === this.$store.state.playerId
+      );
+
+      if (player) {
+        if (
+          this.$store.state.players.find(
+            player => player.playerId === this.$store.state.playerId
+          ).leader === true
+        ) {
+          return true;
+        } else {
+          return false;
+        }
+      }
     }
   },
   methods: {
-    getPlayers() {
-      this.$socket.emit('getLobbyPlayers', { lobbyId: this.$route.params.id }, (data) => {
-        this.players = data
-      });
+    connectToSocketRoom() {
+      this.$socket.emit("connectToRoom", { roomId: this.$store.state.roomId });
     },
     leaveLobby() {
-      this.$store.dispatch('leaveLobby', { lobbyId: this.$route.params.id, playerName: this.$store.state.gamePlayerName, vm: this })
+      this.$socket.emit(
+        "leaveLobby",
+        {
+          playerId: this.$store.state.playerId,
+          roomId: this.$store.state.roomId
+        },
+        data => {
+          this.$router.push({ name: "Home" });
+          this.$store.dispatch("resetPlayer");
+        }
+      );
+    },
+    checkIfLobbyExists() {
+      this.$socket.emit(
+        "checkIfLobbyExists",
+        { roomId: this.$route.params.id },
+        data => {
+          if (!data) {
+            this.$router.push({ name: "Home" });
+            this.$store.dispatch("resetPlayer");
+          } else {
+            if ("geolocation" in navigator) {
+              navigator.geolocation.getCurrentPosition(position => {
+                let pos = [position.coords.longitude, position.coords.latitude]
+                this.$socket.emit("updatePosition", {
+                  roomId: this.$store.state.roomId,
+                  playerId: this.$store.state.playerId,
+                  pos
+                });
+              });
+            }
+          }
+        }
+      );
+    },
+    initGame() {
+      this.$socket.emit("initGame", { roomId: this.$route.params.id });
+    },
+    startGame() {
+      console.log("Starting game");
+      this.$router.push({ name: "Map" });
+
+      this.$store.commit("UPDATE_INGAME", true);
     }
   }
-}
+};
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital@1&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Lobster&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital@1&display=swap");
 
-  .playerField {
-    position: relative;
-    width: 30%;
-    margin:auto;
-    border-radius: 50%;
-    margin-bottom: 10px;
+div p {
+  font-family: "Lobster", cursive;
+  color: white;
+  font-size: 30px;
+  margin: 20px;
+}
+
+.globeImg {
+  height: 130px;
+}
+
+.playerField {
+  position: relative;
+  width: 90%;
+  margin: auto;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
   }
-
-  .playerField img {
-    position: relative;
+  100% {
+    transform: rotate(360deg);
   }
-
-  .player {
-    position: relative; 
-    width:auto;
-    margin:5px;
-    display: inline-block;
-    border-radius: 5px;
-    color: white;
-    font-size: 20pt;
-  }
-
-  .player h5 {
-    font-family: 'Poppins', sans-serif;
-    font-size: 10pt;
-    font-weight: lighter;
-    color: white;
-  }
-
-
-  div p {
-    font-family: 'Lobster', cursive;
-    color:white;  
-    font-size: 30px;
-    margin: 20px;
-  }
-
-  @keyframes rotate {
-  0%   {transform: rotate(0deg);}
-  100% {transform: rotate(360deg);}
 }
 </style>

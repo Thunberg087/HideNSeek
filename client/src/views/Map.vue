@@ -1,8 +1,16 @@
 <template>
-  <div v-if="this.currentPosition" class="mapWrapper">
-      <MglMap :attributionControl="false" :accessToken="accessToken" :mapStyle="mapStyle" :center="currentPosition" :zoom='13'>
+  <div  class="mapWrapper">
+           <button @click="leaveGame">LEave</button>
+
+
+      <MglMap v-if="this.currentPosition" :attributionControl="false" :accessToken="accessToken" :mapStyle="mapStyle" :center="currentPosition" :zoom='13'>
         <MglNavigationControl position="top-right" />
-          <MglGeolocateControl position="bottom-left" />
+        <MglGeolocateControl position="bottom-left" />
+          <MglMarker :coordinates="player.pos" :key="player.playerId" v-for="player in this.$store.state.players" color="black">
+            <MglPopup>
+              <div>{{ player.pos }}</div>
+            </MglPopup>
+          </MglMarker>
       </MglMap>
   </div>
 </template>
@@ -17,6 +25,7 @@ import {
   MglFullscreenControl,
   MglScaleControl,
   MglMarker,
+  MglPopup,
   MglGeojsonLayer 
 } from "vue-mapbox";
 
@@ -27,6 +36,7 @@ export default {
     MglGeolocateControl,
     MglScaleControl,
     MglMarker,
+    MglPopup,
     MglGeojsonLayer 
   },
   data() {
@@ -37,18 +47,16 @@ export default {
     };
   },
   created() {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(position => {
-        this.currentPosition = [ position.coords.longitude, position.coords.latitude ]
-        console.log(position.coords);
-        
-      });
-    } 
+    console.log(this.$store.state.players);
+    console.log(this.$store.state);
+    this.currentPosition = this.$store.state.players.find(el => el.playerId === this.$store.state.playerId).pos
+    // this.$store.state.players
   },
-  mounted() {
-    setTimeout(function() {
-      document.querySelector(".mapboxgl-ctrl-geolocate").click();
-    }, 1000);
+  methods: {
+    leaveGame() {
+      this.$store.dispatch('resetPlayer')
+      this.$router.push({ name: 'Home' })
+    }
   }
 };
 </script>

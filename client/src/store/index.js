@@ -6,51 +6,36 @@ import router from './../router'
 Vue.use(Vuex)
 
 let state = {
-  inGame: false,
-  gameLobbyID: null,
-  gamePlayerName: null
+  playerId: null,
+  roomId: null,
+  ingame: false,
+  players: []
 }
 
 let mutations = {
-  UPDATE_GAME_CONNECTION(state, payload) {
-    state.inGame = payload.inGame
-    state.gameLobbyID = payload.gameLobbyID
-    state.gamePlayerName = payload.gamePlayerName
+  UPDATE_PLAYERID(state, payload) {
+    state.playerId = payload
+  },  
+  UPDATE_ROOMID(state, payload) {
+    state.roomId = payload
+  },
+  UPDATE_INGAME(state, payload) {
+    state.ingame = payload
+  },
+  UPDATE_PLAYERS(state, payload) {
+    state.players = payload
   }
 }
 
 let actions = {
-  joinLobby({ commit }, payload) {    
-    return new Promise((resolve, reject) => {
- 
-    let vm = payload.vm
-    vm.$socket.emit('joinLobby', { lobbyId: payload.lobbyId, playerName: payload.playerName }, (data) => {
-      if (data.errMsg) {
-        if (router.app.$route.name != 'Home') {
-          router.push({name: 'Home'}) 
-        }
-        reject(data) 
-      } else {
-        commit('UPDATE_GAME_CONNECTION', { inGame: true, gameLobbyID: payload.lobbyId, gamePlayerName: payload.playerName })
-        if (router.app.$route.name != 'Lobby') {
-          router.push({name: 'Lobby', params: { id: payload.lobbyId }})
-        }
-        resolve()
-      }
-    });
-  });
+  updatePlayerInfo({ commit }, payload) {
+    commit('UPDATE_PLAYERID', payload.playerId)
+    commit('UPDATE_ROOMID', payload.roomId)
   },
-  leaveLobby({ dispatch }, payload) {    
-    let vm = payload.vm
-    vm.$socket.emit('leaveLobby', { lobbyId: payload.lobbyId, playerName: payload.playerName }, (data) => {
-      dispatch('resetLobbyStatus')
-    });
-  },
-  resetLobbyStatus({ commit }) {
-    commit('UPDATE_GAME_CONNECTION', { inGame: false, gameLobbyID: null, gamePlayerName: null })
-    if (router.app.$route.name != 'Home') {
-      router.push({name: 'Home'}) 
-    }
+  resetPlayer({ commit }) {
+    commit('UPDATE_PLAYERID', null)
+    commit('UPDATE_ROOMID', null)
+    commit('UPDATE_INGAME', false)
   }
 }
 

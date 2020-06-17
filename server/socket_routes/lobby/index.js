@@ -3,76 +3,72 @@ module.exports = (io, socket, rooms) => {
 
   socket.on('createLobby', (data, callback) => {
     console.log("Creating lobby");
-    socket.playerName = data.playerName
-    let lobbyId = makeid(1)
-    rooms.push({ roomId: lobbyId })
-    socket.join(lobbyId, () => {
-      updatePlayers(lobbyId)
-      callback(lobbyId)
-    });
+    let roomId = makeid(1)
+    connectToRoom(socket, roomId)
+    let player = {
+      playerId: makeid(10),
+      playerName: data.playerName,
+      leader: true
+    }
+    let newRoom = {roomId, players: [player] }
+    rooms[roomId] = newRoom
+    updatePlayers(roomId, rooms[roomId].players)
+
+    
+    callback(newRoom)
   });
 
 
   socket.on('joinLobby', async (data, callback) => {
 
-    if (rooms.find(el => el.roomId === data.lobbyId)) {
-      let clients = await getPlayers(data.lobbyId)
-      if (!clients.find(client => client.playerName === data.playerName)) {
-        socket.playerName = data.playerName
-        console.log(`${data.playerName} joined room: ${data.lobbyId}`);
-  
-        socket.join(data.lobbyId, () => {
-          updatePlayers(data.lobbyId)
-          callback({})
-        });
-      } else {
-        callback({
-          errMsg: 'Player name already exists'
-        })
-      }
-
+    if (rooms[data.roomId]) {
+      let playerId = makeid(10)
+      connectToRoom(socket, data.roomId)
+      rooms[data.roomId].players.push({playerId: playerId, playerName: data.playerName})
+      updatePlayers(data.roomId, rooms[data.roomId].players)
+      callback({playerId})
     } else {
-      callback({
-        errMsg: 'Game does not exists'
-      })
+      callback({ errorMessage: 'Lobby doesnt exists' })
     }
-
   });
 
-  socket.on('leaveLobby', (data, callback) => {
-    socket.leave(data.lobbyId);
-    console.log(`${data.playerName} left room: ${data.lobbyId}`);
-    updatePlayers(data.lobbyId)
+  socket.on('leaveLobby', async (data, callback) => {
+    socket.leave(data.roomId);
+    delete rooms[data.roomId].players.splice(rooms[data.roomId].players.findIndex(player => player.playerId === data.playerId), 1)
+    updatePlayers(data.roomId, rooms[data.roomId].players) 
     callback()
   });
 
-
-  socket.on('getLobbyPlayers', async (data, callback) => {
-    callback(await getPlayers(data.lobbyId))
+  socket.on('connectToRoom', async (data) => {
+    connectToRoom(socket, data.roomId)
   });
 
 
-  async function getPlayers(lobbyId) {
-    return await new Promise(resolve => {
-      io.in(lobbyId).clients(async (err, clients) => {
-
-        let promises = clients.map(async el => {
-          return { socketId: el, playerName: io.sockets.connected[el].playerName }
-        })
-
-        Promise.all(promises).then(function (results) {
-          resolve(results)
-        })
-
-      });
-    });
+  function connectToRoom(socket, roomId) {
+    socket.join(roomId);
   }
 
-  async function updatePlayers(lobbyId) {
-    let clients = await getPlayers(lobbyId)
-    socket.to(lobbyId).emit('updatePlayers', clients);
+
+  function updatePlayers(roomId, players) {
+    io.in(roomId).emit('updatePlayers', players);
   }
 
+  socket.on('getLobbyPlayers', async (data, callback) => {
+    if (rooms[data.roomId]) {
+      callback(rooms[data.roomId])
+    } else {
+      callback([])
+    }
+    
+  });
+
+  socket.on('checkIfLobbyExists', async (data, callback) => {
+    if (rooms[data.roomId]) {
+      callback(true)
+    } else {
+      callback(false)
+    }
+  });
 
   function makeid(length) {
     var result = '';
@@ -83,5 +79,5 @@ module.exports = (io, socket, rooms) => {
     }
     return result;
   }
-  
+
 }
