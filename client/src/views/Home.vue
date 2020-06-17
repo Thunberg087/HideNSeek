@@ -1,5 +1,6 @@
 <template>
   <div class="home">
+    <Logo />
     <div class="menu">
       <input type="text" placeholder="Your name" v-model="playerName">
       <button @click="createLobby">Create game</button>
@@ -10,9 +11,12 @@
 </template>
 
 <script>
-
+import Logo from './../components/general/Logo'
 
 export default {
+  components: {
+    Logo
+  },
   name: 'Home',
   data() {
     return {
@@ -59,6 +63,8 @@ export default {
  }
 
  .menu button {
-   background: rgb(63, 205, 75);
+   border: 1px solid rgb(158, 45, 45);;
+   background: rgb(205, 63, 63);
+   color: white;
  }
 </style>

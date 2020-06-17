@@ -5,6 +5,9 @@ import router from './router'
 import VueSocketIO from 'vue-socket.io'
 import io from 'socket.io-client'
 import store from './store'
+import '@fortawesome/fontawesome-free/css/all.css'
+import '@fortawesome/fontawesome-free/js/all.js'
+
 
 export const socket = io("http://localhost:3000")
 
