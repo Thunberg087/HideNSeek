@@ -2,7 +2,7 @@
   <div v-if="this.currentPosition" class="mapWrapper">
       <MglMap :attributionControl="false" :accessToken="accessToken" :mapStyle="mapStyle" :center="currentPosition" :zoom='13'>
         <MglNavigationControl position="top-right" />
-  
+          <MglGeolocateControl position="bottom-left" />
       </MglMap>
   </div>
 </template>
@@ -44,6 +44,11 @@ export default {
         
       });
     } 
+  },
+  mounted() {
+    setTimeout(function() {
+      document.querySelector(".mapboxgl-ctrl-geolocate").click();
+    }, 1000);
   }
 };
 </script>
@@ -58,6 +63,10 @@ export default {
 /deep/ .mapboxgl-canvas {
   width: auto;
   height: auto;
+}
+
+/deep/ .mapboxgl-ctrl-logo {
+  display: none;
 }
 
 

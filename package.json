@@ -1,0 +1,20 @@
+{
+  "name": "hidenseek-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "tokens.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Thunberg087/HideNSeek.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Thunberg087/HideNSeek/issues"
+  },
+  "homepage": "https://github.com/Thunberg087/HideNSeek#readme"
+}

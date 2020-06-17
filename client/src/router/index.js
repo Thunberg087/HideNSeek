@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
+import Lobby from '../views/Lobby.vue'
 
 Vue.use(VueRouter)
 
@@ -11,9 +12,17 @@ Vue.use(VueRouter)
     component: Home
   },
   {
+    path: '/lobby/:id',
+    name: 'Lobby',
+    component: Lobby
+  },
+  {
     path: '/map',
     name: 'Map',
-    component: () => import('../views/Map.vue')
+    component: () => import('../views/Map.vue'),
+    meta: {
+      requiresAuth: true
+    }
   }
 ]
 
